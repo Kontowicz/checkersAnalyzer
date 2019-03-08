@@ -17,4 +17,3 @@ Wrzucenie zmian (operacje powinny być wykonane dość szybko -tzn w 15/20 min):
 4. Przełaczasz się na master: git checkout master
 5. Wpisujesz git merge <Twoja nazwa brancha>
 6. Wpisujesz git pull  
-
