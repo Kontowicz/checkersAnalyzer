@@ -12,8 +12,8 @@ Kurs obsługi gita w skrócie:
 Wrzucenie zmian (operacje powinny być wykonane dość szybko -tzn w 15/20 min): 
 1. Wszystkie zmiany (te które chcesz) commitujesz na swoim branchu.
 2. Przełaczasz się na master. Wpisujesz: git pull
-3. Przełączasz się na swój branch: git checkout Twoja nazwa brancha
+3. Przełączasz się na swój branch: git checkout Twoja_nazwa_brancha
 3. Wpisujesz: git rebase master
 4. Przełaczasz się na master: git checkout master
-5. Wpisujesz git merge <Twoja nazwa brancha>
+5. Wpisujesz git merge Twoja_nazwa_brancha
 6. Wpisujesz git pull  
