@@ -1,41 +1,38 @@
 import cv2
 import numpy as np
-from enum import Enum
-import collections as co
-
-class color(Enum):
-    white = 1
-    black = 2
+import copy
+import board
+from board import color as color
 
 class checkersAnalyzer(object):
 
-    # Konstruktor
-    def __init__(self, debug):
+    # Constructor
+    def __init__(self, debug, img):
         self.debug = debug
-        self.image = None # Obraz szachownicy z kamery
-        self.points = [] # Wspołrzędne do przeksztalcenia
-        self.wh_size= 450 # Szerokość, wysokość obrazu do obrobki
-        self.matrix_pawns = np.zeros((8, 8)) # Macierz pozycji pionkow aktualna
-        self.matrix_old_pawns = np.zeros((8, 8)) # Macierz pozycji pionków poprzednia
-        self.coordinates = {} # Słownik wspołrzędne w macierzy, współrzędne na obrazie
-        self.sq = 68 # Wielkość pojedynczego pola w planszy do wizualizacji
-        self.checkers_size = 544 # Rozmiar planszy do wizualizacji
-        self.board = None # Wizualizacja planszy
+        self.image = img # Image captured from camera
+        self.points = [] # Points for transposition
+        self.wh_size= 450 # Widht, heigt image for work
+        self.sq = 68 # Field size
+        self.checkers_size = 544 # Board size for visualisation
+        self.board = None # Board visualisation
         self.first_sq = None
+        self.detectAreaBoardDistribution()
+        self.currentStateBoard = board.board(self.first_sq, self.sq)
+        self.previousStateBoard = None
 
     def isValid(self):
         raise NotImplemented()
 
-    # Ustawienie klatki z filmu/kamery jako img.
+    # Set frame as image.
     def readVideo(self,img):
         self.image=cv2.resize(img,(self.wh_size,self.wh_size))
 
-    # Wczytanie zdjecia.
+    # Read image.
     def read(self, path1):
         self.image = cv2.imread(path1, cv2.IMREAD_COLOR)
         self.image = cv2.resize(self.image, (self.wh_size,self.wh_size))
 
-    # Transformacja morfologiczna wyodrębniająca szachownicę na podstawie wcześniej podanych parametrów.
+    # Morphological transposiotin to get board based on previwious parematers.
     def checkboardTransposition(self):
         p = self.points
         pts1 = np.float32([[p[0][0], p[0][1]], [p[1][0], p[1][1]], [p[2][0], p[2][1]], [p[3][0], p[3][1]]])
@@ -44,7 +41,7 @@ class checkersAnalyzer(object):
         dst = cv2.warpPerspective(self.image, M, (self.wh_size, self.wh_size))
         self.image = dst
 
-    # Pobranie pozycji szachownicy w przypadku odręcznego zaznaczania jej położenia.
+    # Get board position by hand
     def checkboardCoordinate(self):
         def onMouse(event, x, y,flaga,a):
             if event == cv2.EVENT_LBUTTONDOWN:
@@ -54,13 +51,7 @@ class checkersAnalyzer(object):
         while len(self.points)<4:
             cv2.waitKey(1)
 
-    # Wypełnienie słownika odpowiednimi wartościami (x,y) -> pozycja tablicy : [a,b] -> pozycja pikseli w wizualizacji.
-    def intoDictionary(self):
-        for x in range(0, 8):
-            for y in range(0, 8):
-                self.coordinates.update({str(x) + str(y): [self.sq * (x + 1), self.sq * (y + 1)]})
-
-    # Tworzenie szachownicy position=0 -> lewy górny czarny, position=1 -> lewy górny biały.
+    # Create board for visualisation.
     def createCheckers(self):
         img = np.zeros((self.checkers_size,self.checkers_size, 3), dtype=np.uint8)
         c = np.fromfunction(lambda x, y: ((x // self.sq) + (y // self.sq)) % 2, (self.checkers_size, self.checkers_size))
@@ -72,17 +63,17 @@ class checkersAnalyzer(object):
             img[c == 1] = (0,0,0)
         return img
 
-    # Wypisanie aktualnego stanu pionków.
+    # Draw current pawn state.
     def drawTextInImageText(self):
         text = np.zeros((136,self.checkers_size, 3), dtype=np.uint8)
         text[::]=(128,128,128)
-        ilosc = co.Counter(self.matrix_pawns.flatten())
+        black, white = self.currentStateBoard.countPawns()
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(text, 'Biale: '+str(ilosc[2.0]), (150, 60), font, 2, (255, 255, 255), 2, cv2.LINE_AA)
-        cv2.putText(text, 'Czarne: '+str(ilosc[1.0]), (110, 125), font, 2, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(text, 'Biale: ' + str(white), (150, 60), font, 2, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(text, 'Czarne: ' + str(black), (110, 125), font, 2, (255, 255, 255), 2, cv2.LINE_AA)
         return text
 
-    # Przekazanie parametrów w celu wyświetlenia obrazu, złączenie szachownicy z napisami.
+    # Pass arguments for display image, join displayed image with board.
     def drawBoard(self):
         new_board = np.concatenate((self.board,self.drawTextInImageText()),axis=0)
         return self.image_circle, self.image, new_board
@@ -90,7 +81,7 @@ class checkersAnalyzer(object):
         cv2.imshow('Plansza', self.image)
         cv2.imshow('Wizualizacja', new_board)
 
-    # Wykrycie rozkładu pół na szachownicy.
+    # Detect fields distribution.
     def detectAreaBoardDistribution(self):
         img = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         width, height = [x // 8 for x in img.shape[0:2]]
@@ -104,29 +95,28 @@ class checkersAnalyzer(object):
         else:
             self.first_sq = color.white
 
-    # Wykrywanie pionków.
+    # Detect pawns.
     def detectCircle(self):
         img = cv2.cvtColor(self.image,cv2.COLOR_BGR2GRAY)
         self.image_circle = self.image.copy()
 
-        # Wyliczenie szerkości pól na obrazie z kamery
+        # Calculate field width based on current image.
         width_sq = img.shape[0] / 8
         height_sq =  img.shape[1] / 8
 
-        # Wyszukanie kół na obrazie
+        # Detect circles in image.
         circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=100, param2=30, minRadius=18, maxRadius=22)
         circles = np.uint16(np.around(circles))
 
-        # Zaznaczenie środków znalezionych kół oraz ich obrysów.
+        # Select detected circle center and it's  contours
         for i in circles[0, :]:
             cv2.circle(self.image_circle, (i[0], i[1]), i[2], (0, 255, 0), 1);
             cv2.circle(self.image_circle, (i[0], i[1]), 2, (0, 0, 255), 3);
 
+        matrix2 = []  # Table for storage pawns positions.
+        center_circle = [] # Table for storage image slices with circle center.
 
-        matrix2 = []  # Stworzenie tablicy przechowującej wspołrzęnde poszczególnych pionów - tablica 8 na 8.
-        center_circle = [] # Stworzenie tablicy przechowującej wycinki z centrum poszczególnych pionków.
-
-        # Wypełnienie tablicy Matrix2 oraz centra.
+        # Fill matrix2 and center_circle
         for x in circles[0]:
             x1 = int(x[1] // width_sq)
             y1 = int(x[0] // height_sq)
@@ -135,18 +125,16 @@ class checkersAnalyzer(object):
             center_circle.append(thresh1)
             matrix2.append([y1, x1])
 
-        # Aktualizacja matrix_pawns oraz rysowania pionów.
-        self.matrix_old_pawns = self.matrix_pawns.copy()
-        self.matrix_pawns[::] = 0
+        # Update currentStateBoard and draw conturs.
         self.board = self.createCheckers()
+        self.previousStateBoard = copy.copy(self.currentStateBoard)
+        self.currentStateBoard.clearPawns()
         for x, y in zip(matrix2, center_circle):
             if y[4,4]==0:
-                self.matrix_pawns[x[1], x[0]] = color.white.value
-                cv2.circle(self.board,
-                           (self.coordinates[str(x[1]) + str(x[0])][1] - 34, self.coordinates[str(x[1]) + str(x[0])][0] - 34), 20,
-                           (64,64,64), -1)
+                self.currentStateBoard.setPawnColor(x[1], x[0], color.white)
+                i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
+                cv2.circle(self.board, (j - 34, i - 34), 20, (64,64,64), -1)
             else:
-                self.matrix_pawns[x[1], x[0]] = color.black.value
-                cv2.circle(self.board,
-                           (self.coordinates[str(x[1]) + str(x[0])][1] - 34, self.coordinates[str(x[1]) + str(x[0])][0] - 34), 20,
-                           (217,217,217), -1)
+                self.currentStateBoard.setPawnColor(x[1], x[0], color.black)
+                i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
+                cv2.circle(self.board, (j - 34, i - 34), 20, (217,217,217), -1)
