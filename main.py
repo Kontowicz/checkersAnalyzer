@@ -1,14 +1,13 @@
 import checkersAnalyzer as ca
 import cv2
 
+#TODO: https://www.jetbrains.com/help/pycharm/viewing-reference-information.html
+
 if __name__ == '__main__':
     a = ord('a')
-    analyzer = ca.checkersAnalyzer(False)
     cap = cv2.VideoCapture('Picture/movie2.mp4')
     ret, frame = cap.read()
-    analyzer.readVideo(frame)
-    analyzer.detectAreaBoardDistribution()
-    analyzer.intoDictionary()
+    analyzer = ca.checkersAnalyzer(False, frame)
     while (cap.isOpened() and a!=ord('q')):
         analyzer.detectCircle()
         analyzer.drawTextInImageText()
