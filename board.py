@@ -7,7 +7,6 @@ class color(Enum):
 
 class board(object):
     def __init__(self, firstColor, sq):
-        #self.coordinates.update({str(x) + str(y): [self.sq * (x + 1), self.sq * (y + 1)]})
         self.board = []
         for i in range(0, 8):
             tmp = []
