@@ -20,7 +20,12 @@ class checkersAnalyzer(object):
         self.currentStateBoard = board.board(self.first_sq, self.sq)
         self.previousStateBoard = None
 
-    def isValid(self):
+    def analyze(self):
+#TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
+        raise NotImplemented()
+
+
+    def isValidBoard(self):
         raise NotImplemented()
 
     # Set frame as image.
@@ -138,3 +143,6 @@ class checkersAnalyzer(object):
                 self.currentStateBoard.setPawnColor(x[1], x[0], color.black)
                 i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
                 cv2.circle(self.board, (j - 34, i - 34), 20, (217,217,217), -1)
+
+    def isValidMove(self):
+        raise NotImplemented()
