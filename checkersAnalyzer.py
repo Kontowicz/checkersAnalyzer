@@ -132,7 +132,7 @@ class checkersAnalyzer(object):
 
         # Update currentStateBoard and draw conturs.
         self.board = self.createCheckers()
-        self.previousStateBoard = copy.copy(self.currentStateBoard)
+        self.previousStateBoard.board = copy.deepcopy(self.currentStateBoard.board)
         self.currentStateBoard.clearPawns()
         for x, y in zip(matrix2, center_circle):
             if y[4,4]==0:
