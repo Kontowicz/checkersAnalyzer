@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import copy
 import board
-from board import color as color
+from board import state as color
 
 class checkersAnalyzer(object):
 
@@ -18,7 +18,7 @@ class checkersAnalyzer(object):
         self.first_sq = None
         self.detectAreaBoardDistribution()
         self.currentStateBoard = board.board(self.first_sq, self.sq)
-        self.previousStateBoard = None
+        self.previousStateBoard = board.board(self.first_sq, self.sq)
 
     def analyze(self):
 #TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
