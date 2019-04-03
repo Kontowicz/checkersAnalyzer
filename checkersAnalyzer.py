@@ -2,13 +2,15 @@ import cv2
 import numpy as np
 import copy
 import board
-from board import color as color
+from board import state as color
 
 class checkersAnalyzer(object):
 
     # Constructor
     def __init__(self, debug, img):
-        self.debug = debug
+        self.counter = 0
+        self.bootomPawnColor = None
+        self.currentColorMove = color.black # TODO: change color in when captured game start with white pawn move
         self.image = img # Image captured from camera
         self.points = [] # Points for transposition
         self.wh_size= 450 # Widht, heigt image for work
@@ -18,7 +20,7 @@ class checkersAnalyzer(object):
         self.first_sq = None
         self.detectAreaBoardDistribution()
         self.currentStateBoard = board.board(self.first_sq, self.sq)
-        self.previousStateBoard = None
+        self.previousStateBoard = board.board(self.first_sq, self.sq)
 
     def analyze(self):
 #TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
@@ -136,13 +138,95 @@ class checkersAnalyzer(object):
         self.currentStateBoard.clearPawns()
         for x, y in zip(matrix2, center_circle):
             if y[4,4]==0:
-                self.currentStateBoard.setPawnColor(x[1], x[0], color.white)
+                self.currentStateBoard.setPawnColor(x[1], x[0], color.black)
                 i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
                 cv2.circle(self.board, (j - 34, i - 34), 20, (64,64,64), -1)
             else:
-                self.currentStateBoard.setPawnColor(x[1], x[0], color.black)
+                self.currentStateBoard.setPawnColor(x[1], x[0], color.white)
                 i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
                 cv2.circle(self.board, (j - 34, i - 34), 20, (217,217,217), -1)
 
+        if self.counter == 0:
+            self.previousStateBoard.board = copy.deepcopy(self.currentStateBoard.board)
+        
+        self.counter = 1
+        self.getDiff()
+        self.checkMoves()
+        # if self.checkMoves():
+        #     self.currentColorMove = color.black if self.currentColorMove == color.white else color.white
+        #     print('Next move pawn color: {}'.format(self.currentColorMove))
+
     def isValidMove(self):
         raise NotImplemented()
+
+    def checkMoves(self):
+        self.allInBlack()
+        file = open('test.txt', 'a')
+        diff = self.getDiff()
+        if diff == None:
+            return None
+
+        tmp = []
+        for i in range(0, 8):
+            for j in range(0, 8):
+                if diff[i][j] == 1:
+                    tmp.append([i, j])
+        if len(tmp) == 1:
+            return None
+
+        # GET START POSITON
+        startPos = None
+        for item in tmp:
+            if self.previousStateBoard.getPawnColor(item[0],item[1]) != color.empty:
+                startPos = item
+        
+        #if self.bootomPawnColor == color.black:
+
+        # GET END POSITION
+        stopPos = None
+        for item in tmp:
+            if self.previousStateBoard.getPawnColor(item[0],item[1]) == color.empty:
+                stopPos = item
+
+
+        if self.currentColorMove != self.currentStateBoard.board[stopPos[0]][stopPos[1]][0]:
+            print('Invalid move {}'.format(self.currentStateBoard.board[stopPos[0]][stopPos[1]]))
+            print('Start pos: {}  Stop pos: {}'.format(startPos, stopPos))
+            print('Current color move: {} moved: {}'.format(self.currentColorMove, self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]))) 
+            print(tmp)
+            #raise 'Invalid move'
+        
+        self.currentColorMove = color.black if self.currentColorMove == color.white else color.white # 
+
+        file.write('\n\n')
+        file.close()
+        return True
+        
+
+    def allInBlack(self):
+        for item in self.currentStateBoard.board:
+            for element in item:
+                if element[0] is not color.empty and element[1] is color.white:
+                    raise 'Invalid position'
+
+    def getDiff(self):
+        toReturn = []
+        wasDiff = False
+        for i in range(0, 8):
+            tmp = []
+            for j in range(0, 8):
+                if self.currentStateBoard.board[i][j][0] != self.previousStateBoard.board[i][j][0]:
+                    wasDiff = True
+                    tmp.append(1)
+                else:
+                    tmp.append(0)
+            toReturn.append(tmp)
+
+        if wasDiff:
+            return toReturn
+            for item in toReturn:
+                for elem in item:
+                    print(elem, end = ' ')
+                print()
+
+        return None
