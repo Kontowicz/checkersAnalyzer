@@ -5,7 +5,7 @@ if __name__ == '__main__':
     a = ord('a')
     cap = cv2.VideoCapture('Picture/movie2.mp4')
     ret, frame = cap.read()
-    analyzer = ca.checkersAnalyzer(False, frame)
+    analyzer = ca.checkersAnalyzer(True, frame)
     while (cap.isOpened() and a!=ord('q')):
         analyzer.detectCircle()
         analyzer.drawTextInImageText()
