@@ -190,14 +190,6 @@ class checkersAnalyzer(object):
             if self.previousStateBoard.getPawnColor(item[0],item[1]) == color.empty:
                 stopPos = item
 
-        # file = open('test.txt', 'a')
-        # for item in diff:
-        #     for elem in item:
-        #         file.write(str(elem))
-        #         file.write(' ')
-        #     file.write('\n')
-        # file.close()
-
         if self.currentColorMove != self.currentStateBoard.board[stopPos[0]][stopPos[1]][0]:
             print('Current color move: {} Detected move: {}'.format(self.currentColorMove, self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]))) 
             #raise 'Invalid move'
@@ -208,11 +200,16 @@ class checkersAnalyzer(object):
             else:
                 raise 'Invalid detection'
         
-        if len(tmp) == 2 and stopPos != None:
+        if len(tmp) == 2:
             print('StartPos: {}'.format(startPos))
             print('StopPos: {}'.format(stopPos))
 
             if self.debug:
+                if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(stopPos[0], stopPos[1]):
+                    if self.debug:
+                        print('Invalid move')
+                    else:
+                        raise 'Invalid move'
                 if self.currentColorMove == color.white:
                     if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]]:
                         print('Valid move')
@@ -222,10 +219,15 @@ class checkersAnalyzer(object):
                 else:
                     print('Invalid move')
             else:
-                raise 'Invalid detection'
-        if len(tmp) > 2:
+                raise 'Invalid move'
+        if len(tmp) == 3:
             if self.debug:
                 print('Bang')
+            else:
+                raise 'Invalid move'
+        if len(tmp) > 3:
+            if self.debug:
+                print('Invalid detection')
             else:
                 raise 'Invalid detection'
 
