@@ -211,9 +211,9 @@ class checkersAnalyzer(object):
             if self.debug:
                 if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(startPos[0], startPos[1]):
                     if self.debug:
-                        print('Invalid move: {}'.format(tmp))
+                        print('Invalid detection: {}'.format(tmp))
                     else:
-                        raise 'Invalid move'
+                        raise 'Invalid detection'
 
                 if self.currentColorMove == color.white:
                     if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]]:
