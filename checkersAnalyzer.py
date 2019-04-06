@@ -165,7 +165,7 @@ class checkersAnalyzer(object):
 
     def checkMoves(self):
         self.allInBlack()
-        # file = open('test.txt', 'a')
+        file = open('test.txt', 'a')
         diff = self.getDiff()
         if diff == None:
             return None
@@ -174,7 +174,14 @@ class checkersAnalyzer(object):
         for i in range(0, 8):
             for j in range(0, 8):
                 if diff[i][j] == 1:
+                    file.write('1 ')
                     tmp.append([i, j])
+                else:
+                    file.write('0 ')
+            file.write('\n')
+        file.write('\n')
+        file.write('\n')
+        file.close()
         if len(tmp) == 1:
             return None
 
@@ -196,7 +203,7 @@ class checkersAnalyzer(object):
         
         if len(tmp) == 1:
             if self.debug:
-                print('Invalid detection!')
+                print('Invalid detection: {}'.format(len(tmp)))
             else:
                 raise 'Invalid detection'
         
@@ -205,36 +212,41 @@ class checkersAnalyzer(object):
             print('StopPos: {}'.format(stopPos))
 
             if self.debug:
-                if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(stopPos[0], stopPos[1]):
+                if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(startPos[0], startPos[1]):
                     if self.debug:
-                        print('Invalid move')
+                        print('Invalid move: {}'.format(len(tmp)))
                     else:
                         raise 'Invalid move'
+
                 if self.currentColorMove == color.white:
                     if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]]:
-                        print('Valid move')
+                        print('Valid move white')
                 elif self.currentColorMove == color.black:
                     if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]]:
-                        print('Valid move1')
+                        print('Valid move black')
                 else:
-                    print('Invalid move')
+                    print('Invalid move: {}'.format(len(tmp)))
             else:
                 raise 'Invalid move'
         if len(tmp) == 3:
             if self.debug:
-                print('Bang')
+                # Find start position
+                beatPawnPos = [0, 0]
+                secondColor = color.black if self.currentColorMove == color.white else color.white # Toggle collors
+                for item in tmp:
+                    if self.previousStateBoard.getPawnColor(item[0],item[1]) == secondColor:
+                        beatPawnPos = item
+                print('Beat pos: {} Przewidywany kolor: {} Znaleziony kolor: {}'.format(beatPawnPos, secondColor, self.previousStateBoard.getPawnColor(beatPawnPos[0],beatPawnPos[1])))
             else:
                 raise 'Invalid move'
         if len(tmp) > 3:
             if self.debug:
-                print('Invalid detection')
+                print('Invalid detection: {}'.format(len(tmp)))
             else:
                 raise 'Invalid detection'
 
         self.currentColorMove = color.black if self.currentColorMove == color.white else color.white # Toggle collors
 
-        # file.write('\n\n')
-        # file.close()
         return True
         
 
