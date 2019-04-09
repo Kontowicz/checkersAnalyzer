@@ -5,21 +5,17 @@ import board
 from board import state as color
 
 class checkersAnalyzer(object):
-<<<<<<< HEAD
-    # Constructor
-    # Now i assume that black pawns are always at the board bottom.
-=======
 
     # Constructor
-    # Now i assume that balck pawns are always at the board bottom.
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
+    # Now i assume that black pawns are always at the board bottom.
+
     def __init__(self, debug, img):
         self.debug = debug
         file = open('test.txt', 'w')
         file.close()
         self.counter = 0
         self.bootomPawnColor = None
-        self.currentColorMove = color.black # TODO: change color in when captured game start with white pawn move
+        self.currentColorMove = color.white # TODO: change color in when captured game start with white pawn move
         self.image = img # Image captured from camera
         self.points = [] # Points for transposition
         self.wh_size= 450 # Widht, heigt image for work
@@ -30,22 +26,17 @@ class checkersAnalyzer(object):
         self.detectAreaBoardDistribution()
         self.currentStateBoard = board.board(self.first_sq, self.sq)
         self.previousStateBoard = board.board(self.first_sq, self.sq)
-<<<<<<< HEAD
-
-    def analyze(self):
-#TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
-        raise NotImplemented()
-=======
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
 
     def analyze(self):
 #TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
         raise NotImplemented()
 
-<<<<<<< HEAD
-=======
 
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
+    def analyze(self):
+#TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
+        raise NotImplemented()
+
+
     def isValidBoard(self):
         raise NotImplemented()
 
@@ -93,11 +84,9 @@ class checkersAnalyzer(object):
     def drawTextInImageText(self):
         text = np.zeros((136,self.checkers_size, 3), dtype=np.uint8)
         text[::]=(128,128,128)
-<<<<<<< HEAD
+
         white, black = self.currentStateBoard.countPawns()
-=======
-        black, white = self.currentStateBoard.countPawns()
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
+
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(text, 'Biale: ' + str(white), (150, 60), font, 2, (255, 255, 255), 2, cv2.LINE_AA)
         cv2.putText(text, 'Czarne: ' + str(black), (110, 125), font, 2, (255, 255, 255), 2, cv2.LINE_AA)
@@ -135,7 +124,7 @@ class checkersAnalyzer(object):
         height_sq =  img.shape[1] / 8
 
         # Detect circles in image.
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=100, param2=30, minRadius=18, maxRadius=22)
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=100, param2=30, minRadius=24, maxRadius=27)
         circles = np.uint16(np.around(circles))
 
         # Select detected circle center and it's  contours
@@ -164,7 +153,7 @@ class checkersAnalyzer(object):
                 self.currentStateBoard.setPawnColor(x[1], x[0], color.black)
                 i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
                 cv2.circle(self.board, (j - 34, i - 34), 20, (64,64,64), -1)
-<<<<<<< HEAD
+
             else:
                 self.currentStateBoard.setPawnColor(x[1], x[0], color.white)
                 i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
@@ -187,7 +176,7 @@ class checkersAnalyzer(object):
             return None
         colorMove = self.currentColorMove
         self.currentColorMove = color.black if self.currentColorMove == color.white else color.white # Toggle collors
-
+            
         tmp = []
         for i in range(0, 8):
             for j in range(0, 8):
@@ -195,6 +184,10 @@ class checkersAnalyzer(object):
                     tmp.append([i, j])
         if len(tmp) == 1:
             return None
+
+        self.currentColorMove = color.black if self.currentColorMove == color.white else color.white # Toggle collors
+
+
 
         startPos = [0,0]
         stopPos = [0,0]
@@ -203,88 +196,43 @@ class checkersAnalyzer(object):
                 startPos = item
             if self.previousStateBoard.getPawnColor(item[0],item[1]) == color.empty:
                 stopPos = item
-     
-        if colorMove != self.currentStateBoard.board[stopPos[0]][stopPos[1]][0] and len(tmp) == 2 or len(tmp) == 3:
-            if self.debug:
-                print('Detection error')
-            else:
-                raise 'Invalid move'
-=======
-            else:
-                self.currentStateBoard.setPawnColor(x[1], x[0], color.white)
-                i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
-                cv2.circle(self.board, (j - 34, i - 34), 20, (217,217,217), -1)
 
-        if self.counter == 0:
-            self.previousStateBoard.board = copy.deepcopy(self.currentStateBoard.board)
-        
-        self.counter = 1
-        self.getDiff()
-        self.checkMoves()
-        # if self.checkMoves():
-        #     self.currentColorMove = color.black if self.currentColorMove == color.white else color.white
-        #     print('Next move pawn color: {}'.format(self.currentColorMove))
-
-    def isValidMove(self):
-        raise NotImplemented()
-
-    def checkMoves(self):
-        self.allInBlack()
-        file = open('test.txt', 'a')
-        diff = self.getDiff()
-        if diff == None:
-            return None
-
-        tmp = []
-        for i in range(0, 8):
-            for j in range(0, 8):
-                if diff[i][j] == 1:
-                    file.write('1 ')
-                    tmp.append([i, j])
-                else:
-                    file.write('0 ')
-            file.write('\n')
-        file.write('\n')
-        file.write('\n')
-        file.close()
-        if len(tmp) == 1:
-            return None
-
-        # GET START POSITON
-        startPos = [0,0]
-        for item in tmp:
-            if self.previousStateBoard.getPawnColor(item[0],item[1]) == self.currentColorMove:
-                startPos = item
-
-        # GET END POSITION
-        stopPos = [0,0]
-        for item in tmp:
-            if self.previousStateBoard.getPawnColor(item[0],item[1]) == color.empty:
-                stopPos = item
-
-        if self.currentColorMove != self.currentStateBoard.board[stopPos[0]][stopPos[1]][0]:
-            print('Current color move: {} Detected move: {}'.format(self.currentColorMove, self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]))) 
-            #raise 'Invalid move'
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
-        
         if len(tmp) == 1:
             if self.debug:
-                print('Invalid detection: {}'.format(len(tmp)))
+                print('Invalid detection1: {}'.format(len(tmp)))
             else:
                 raise 'Invalid detection'
         
         if len(tmp) == 2:
             if self.debug:
+                if startPos == [0, 0]:     
+                    tmp.remove(stopPos)       
+                    startPos = tmp[0]
+                    tmp.append(stopPos)
+                
                 if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(startPos[0], startPos[1]):
-<<<<<<< HEAD
-                    print('Invalid detection: {}'.format(tmp))
+                    print('Invalid detection2: {}'.format(tmp))
+                    print('Stop pos: {}'.format(stopPos))
+                    print('Start pos: {}'.format(startPos))
+                    print('Stop pos color: {}'.format(self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1])))
+                    print('Start pos color: {}'.format(self.previousStateBoard.getPawnColor(startPos[0], startPos[1])))
+                    for item in diff:
+                        for elem in item:
+                            print(elem, end = ' ')
+                        print()
+
 
                 if colorMove == color.white:
-                    if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]]:
-                        print('Valid move white')
+                    if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]] or startPos in [[stopPos[0] + 1, stopPos[1] - 1], [stopPos[0] + 1, stopPos[1] + 1]]:
+                        print('Valid move white: {} {}'.format(startPos, stopPos))
+                    else:
+                        print('Invalid move white {} {}'.format(startPos, stopPos))
                 elif colorMove == color.black:
-                    if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]]:
+                    if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]] or startPos in [[stopPos[0] - 1, stopPos[1] - 1], [stopPos[0] - 1, stopPos[1] + 1]]:
                         print('Valid move black')
+                    else:
+                        print('Invalid move black {} {}'.format(startPos, stopPos))
+
             else:
                 if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(startPos[0], startPos[1]):
                     raise 'Invalid detection'
@@ -301,32 +249,13 @@ class checkersAnalyzer(object):
             if self.debug:
                 beatPawnPos = [0, 0]
                 secondColor = color.black if colorMove == color.white else color.white # Toggle collors
-=======
-                    if self.debug:
-                        print('Invalid detection: {}'.format(tmp))
-                    else:
-                        raise 'Invalid detection'
 
-                if self.currentColorMove == color.white:
-                    if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]]:
-                        print('Valid move white')
-                elif self.currentColorMove == color.black:
-                    if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]]:
-                        print('Valid move black')
-            else:
-                raise 'Invalid move'
-        if len(tmp) == 3:
-            if self.debug:
-                # Find start position
-                beatPawnPos = [0, 0]
-                secondColor = color.black if self.currentColorMove == color.white else color.white # Toggle collors
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
                 for item in tmp:
                     if self.previousStateBoard.getPawnColor(item[0],item[1]) == secondColor:
                         beatPawnPos = item
                 print('Beat pos: {} Przewidywany kolor: {} Znaleziony kolor: {}'.format(beatPawnPos, secondColor, self.previousStateBoard.getPawnColor(beatPawnPos[0],beatPawnPos[1])))
             else:
-<<<<<<< HEAD
+
                 beatPawnPos = [0, 0]
                 secondColor = color.black if colorMove == color.white else color.white # Toggle collors
                 for item in tmp:
@@ -334,28 +263,18 @@ class checkersAnalyzer(object):
                         beatPawnPos = item
                 raise 'Invalid move'
 
-=======
-                raise 'Invalid move'
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
         if len(tmp) > 3:
             if self.debug:
                 print('Invalid detection: {}'.format(len(tmp)))
             else:
                 raise 'Invalid detection'
 
-<<<<<<< HEAD
         if self.debug:
             return True
         else:
             raise 'checkMoveValidation'
         
-=======
-        self.currentColorMove = color.black if self.currentColorMove == color.white else color.white # Toggle collors
 
-        return True
-        
-
->>>>>>> f1a5c74562350580d95131afb516d8454ecb8f02
     def allInBlack(self):
         for item in self.currentStateBoard.board:
             for element in item:

@@ -3,7 +3,7 @@ import cv2
 
 if __name__ == '__main__':
     a = ord('a')
-    cap = cv2.VideoCapture('Picture/movie2.mp4')
+    cap = cv2.VideoCapture('Picture/output.mp4')
     ret, frame = cap.read()
     analyzer = ca.checkersAnalyzer(True, frame)
     while (cap.isOpened() and a!=ord('q')):
