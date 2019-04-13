@@ -4,19 +4,17 @@ import copy
 import board
 import time
 from board import state as color
+import moveValidator
 
 class checkersAnalyzer(object):
 
     # Constructor
     # Now i assume that black pawns are always at the board bottom.
-
     def __init__(self, debug, img):
-        self.tmpCounter = 0
+        self.moveValid = moveValidator.moveValidator(debug)
+
         self.debug = debug
-        file = open('test.txt', 'w')
-        file.close()
         self.counter = 0
-        self.bootomPawnColor = None
         self.currentColorMove = color.white # TODO: change color in when captured game start with white pawn move
         self.image = img # Image captured from camera
         self.points = [] # Points for transposition
@@ -28,19 +26,6 @@ class checkersAnalyzer(object):
         self.detectAreaBoardDistribution()
         self.currentStateBoard = board.board(self.first_sq, self.sq)
         self.previousStateBoard = board.board(self.first_sq, self.sq)
-
-    def analyze(self):
-#TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
-        raise NotImplemented()
-
-
-    def analyze(self):
-#TODO: Move functionality from main file -> main file should look like: checkAnalyzer = checkersAnalyzer.checkersAnalyzer(); checkAnalyzer.run()
-        raise NotImplemented()
-
-
-    def isValidBoard(self):
-        raise NotImplemented()
 
     # Set frame as image.
     def readVideo(self,img):
@@ -98,9 +83,6 @@ class checkersAnalyzer(object):
     def drawBoard(self):
         new_board = np.concatenate((self.board,self.drawTextInImageText()),axis=0)
         return self.image_circle, self.image, new_board
-        cv2.imshow('Zaznaczone pionki', self.image_circle)
-        cv2.imshow('Plansza', self.image)
-        cv2.imshow('Wizualizacja', new_board)
 
     # Detect fields distribution.
     def detectAreaBoardDistribution(self):
@@ -164,217 +146,16 @@ class checkersAnalyzer(object):
         if self.counter == 0:
             self.previousStateBoard.board = copy.deepcopy(self.currentStateBoard.board)
             self.counter = 1
+        b = self.getBoard()
+        self.moveValid.readNext(b)
+        self.moveValid.checkMove()
 
-        self.checkMoves()
-
-    def isValidMove(self):
-        raise NotImplemented()
-
-    def checkMoves(self):
-        diff = self.getDiff()
-        if diff == None:
-            return None
-
-        self.allInBlack()
-        colorMove = self.currentColorMove
-        self.currentColorMove = self.toogleColor(self.currentColorMove)
-
-        tmp = []
-        for i in range(0, 8):
-            for j in range(0, 8):
-                if diff[i][j] == 1:
-                    tmp.append([i, j])
-        file = open('test.txt', 'a')
-
-        # Write previvoius to file
-        for item in self.previousStateBoard.board:
-            for elem in item:
-                file.write('{} '.format(elem[0].value))
-            file.write('\n')
-        file.write('\n')
-
-        # Write current to file
-        for item in self.currentStateBoard.board:
-            for elem in item:
-                file.write('{} '.format(elem[0].value))
-            file.write('\n')
-
-        file.write('\n')
-
-        file.close()
-
-        startPos = [0,0]
-        stopPos = [0,0]
-        for item in tmp:
-            if self.previousStateBoard.board[item[0]][item[1]][0] == colorMove:
-                startPos = item
-            if self.previousStateBoard.board[item[0]][item[1]][0] == color.empty:
-                stopPos = item
-
-        if stopPos == [0,0] and len(tmp) == 2:
-            tmp.remove(startPos)
-            stopPos = tmp[0]
-            tmp.append(startPos)
-
-        if startPos == [0,0] and len(tmp) == 2:
-            tmp.remove(stopPos)
-            startPos = tmp[0]
-            tmp.append(stopPos)
-
-
-        c = self.previousStateBoard.board[startPos[0]][startPos[1]][0]
-        
-        # if c != colorMove:
-        #     for item in diff:
-        #         for elem in item:
-        #             print(elem, end=' ')
-        #         print()            
-        #     for item in self.currentStateBoard.board:
-        #         for elem in item:
-        #             print(elem[0], end=' ')
-        #         print()
-        #     print()
-        #     for item in self.previousStateBoard.board:
-        #         for elem in item:
-        #             print(elem[0], end=' ')
-        #         print()            
-        #     raise 'Invalid color move'
-        
-        if len(tmp) == 2:
-            self.checkClassicMove(diff, tmp, colorMove, startPos, stopPos)
-        if len(tmp) == 3:
-            self.checkBeat(diff, tmp, colorMove, startPos, stopPos)
-
-        
-
-    def allInBlack(self):
-        for item in self.currentStateBoard.board:
-            for element in item:
-                if element[0] is not color.empty and element[1] is color.white:
-                    raise 'Invalid position'
-
-    def getDiff(self):
+    def getBoard(self):
         toReturn = []
-        wasDiff = False
-        for i in range(0, 8):
+        for item in self.previousStateBoard.board:
             tmp = []
-            for j in range(0, 8):
-                if self.currentStateBoard.board[i][j][0] != self.previousStateBoard.board[i][j][0]:
-                    wasDiff = True
-                    tmp.append(1)
-                else:
-                    tmp.append(0)
+            for elem in item:
+                tmp.append(elem[0].value)
             toReturn.append(tmp)
 
-        if wasDiff:
-            return toReturn
-            for item in toReturn:
-                for elem in item:
-                    print(elem, end = ' ')
-                print()
-
-        return None
-
-    def toogleColor(self, color):
-        if color == color.white:
-            return color.black
-        return color.white
-
-    def checkClassicMove(self, diff, tmp, currentColorMove, startPos, stopPos):
-        if self.debug:
-            if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(startPos[0], startPos[1]):
-                print('Invalid move')
-            if currentColorMove == color.white:
-                if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]] or startPos in [[stopPos[0] + 1, stopPos[1] - 1], [stopPos[0] + 1, stopPos[1] + 1]]:
-                    print('Valid move white: {} {}'.format(startPos, stopPos))
-                else:
-                    print('Invalid move white {} {}'.format(startPos, stopPos))
-            elif currentColorMove == color.black:
-                if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]] or startPos in [[stopPos[0] - 1, stopPos[1] - 1], [stopPos[0] - 1, stopPos[1] + 1]]:
-                    print('Valid move black')
-                else:                    
-                    print('Invalid move black {} {}'.format(startPos, stopPos))
-                    for item in diff:
-                        for elem in item:
-                            print(elem, end=' ')
-                        print()            
-                    for item in self.currentStateBoard.board:
-                        for elem in item:
-                            print(elem[0], end=' ')
-                        print()
-                    print()
-                    for item in self.previousStateBoard.board:
-                        for elem in item:
-                            print(elem[0], end=' ')
-                        print()
-
-                    
-        else:
-            if self.currentStateBoard.getPawnColor(stopPos[0], stopPos[1]) != self.previousStateBoard.getPawnColor(startPos[0], startPos[1]):
-                raise 'Invalid move'
-            if currentColorMove == color.white:
-                if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]] or startPos in [[stopPos[0] + 1, stopPos[1] - 1], [stopPos[0] + 1, stopPos[1] + 1]]:
-                    print('Valid move white.')
-                else:
-                    raise 'Invalid move white.'
-            elif currentColorMove == color.black:
-                if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]] or startPos in [[stopPos[0] - 1, stopPos[1] - 1], [stopPos[0] - 1, stopPos[1] + 1]]:
-                    print('Valid move black')
-                else:
-                    raise 'Invalid move black'
-
-    def checkBeat(self, diff, tmp, currentColorMove, startPos, stopPos):
-        if self.debug:
-            beatPawnPos = [0, 0]
-            secondColor = color.black if currentColorMove == color.white else color.white # Toggle collors
-            for item in tmp:
-                if self.previousStateBoard.getPawnColor(item[0],item[1]) == secondColor:
-                    beatPawnPos = item
-            
-            if currentColorMove == color.white:
-                tmp_0 = [beatPawnPos[0], startPos[0], stopPos[0]]
-                tmp_1 = [beatPawnPos[1], startPos[1], stopPos[1]]
-                tmp_0.sort()
-                tmp_1.sort()
-                if tmp_0[0] + 1 == tmp_0[1] and tmp_0[1] + 1 == tmp_0[2] and tmp_1[0] + 1 == tmp_1[1] and tmp_1[1] + 1 == tmp_1[2]:
-                    print('Valid move')
-                else:
-                    print('Invalid move')
-            if currentColorMove == color.black:
-                tmp_0 = [beatPawnPos[0], startPos[0], stopPos[0]]
-                tmp_1 = [beatPawnPos[1], startPos[1], stopPos[1]]
-                tmp_0.sort()
-                tmp_1.sort()
-                if tmp_0[0] + 1 == tmp_0[1] and tmp_0[1] + 1 == tmp_0[2] and tmp_1[0] + 1 == tmp_1[1] and tmp_1[1] + 1 == tmp_1[2]:
-                    print('Valid move')
-                else:
-                    print('Invalid move')
-        else:
-            beatPawnPos = [0, 0]
-            secondColor = color.black if currentColorMove == color.white else color.white # Toggle collors
-            for item in tmp:
-                if self.previousStateBoard.getPawnColor(item[0],item[1]) == secondColor:
-                    beatPawnPos = item
-            
-            if currentColorMove == color.white:
-                tmp_0 = [beatPawnPos[0], startPos[0], stopPos[0]]
-                tmp_1 = [beatPawnPos[1], startPos[1], stopPos[1]]
-                tmp_0.sort()
-                tmp_1.sort()
-                print('white')
-                print(tmp_0)
-                print(tmp_1)
-                if tmp_0[0] + 1 == tmp_0[1] and tmp_0[1] + 1 == tmp_0[2] and tmp_1[0] + 1 == tmp_1[1] and tmp_1[1] + 1 == tmp_1[2]:
-                    print('Valid move')
-                else:
-                    raise 'Invalid move'
-            if currentColorMove == color.black:
-                tmp_0 = [beatPawnPos[0], startPos[0], stopPos[0]]
-                tmp_1 = [beatPawnPos[1], startPos[1], stopPos[1]]
-                tmp_0.sort()
-                tmp_1.sort()
-                print('black')
-                if tmp_0[0] + 1 == tmp_0[1] and tmp_0[1] + 1 == tmp_0[2] and tmp_1[0] + 1 == tmp_1[1] and tmp_1[1] + 1 == tmp_1[2]:
-                    print('Valid move')
-                else:
-                    raise 'Invalid move'
+        return toReturn
