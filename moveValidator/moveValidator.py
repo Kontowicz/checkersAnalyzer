@@ -1,6 +1,9 @@
 import copy
 from enum import  Enum
 import os
+import time
+import cv2
+import numpy as np
 
 class state(Enum):
     white = 1
@@ -257,7 +260,6 @@ class moveValidator:
     def runAllTests(self):
         files = os.listdir('testCases')
         for file in files:
-
             try:
                 self.currentColorMove = state.white
                 self.previousState = None
@@ -272,10 +274,10 @@ class moveValidator:
 
     def test(self, fileName):
         self.readData(fileName)
-
         for i in range(0, len(self.data)):
             self.readNext(self.data[i])
             self.checkMove()
+
 
     def dumpToFile(self, diff):
         file = open('dump.txt', 'a')
@@ -339,10 +341,51 @@ class moveValidator:
                     lineTMP.append(int(item))
             table.append(lineTMP)
 
+    def getBoard(self):
+        img = np.zeros((544,544, 3), dtype=np.uint8)
+        c = np.fromfunction(lambda x, y: ((x // 68) + (y // 68)) % 2, (544, 544))
+        if self.firstFieldColor == state.white:
+            img[c == 0] = (0,0,0)
+            img[c == 1] = (255,255,255)
+        else:
+            img[c == 0] = (255,255,255)
+            img[c == 1] = (0,0,0)
+        
+        white = self.getPosition(state.white)
+        black = self.getPosition(state.black)
+
+        for item in white:
+            cv2.circle(img, ((((item[1] + 1) * 68) - 34), (((item[0] + 1) * 68) - 34)), 20, (217,217,217), -1)
+
+        for item in black:
+            cv2.circle(img, ((((item[1] + 1) * 68) - 34), (((item[0] + 1) * 68) - 34)), 20, (100, 100, 100), -1)
+        
+        return img
+
+    def getPosition(self, color):
+        toReturn = []
+        for i in range(0, 8):
+            for j in range(0, 8):
+                if self.currentState[i][j] == color.value:
+                    toReturn.append([i, j])
+        
+        return toReturn
+
+    def visualization(self, fileName):
+        self.readData(fileName)
+        for i in range(0, len(self.data)):
+            self.readNext(self.data[i])
+            self.checkMove()
+            img = self.getBoard()
+            cv2.imshow(fileName, img)
+            cv2.waitKey(1000)
+        cv2.destroyAllWindows()
+
+
 
 if __name__ == "__main__":        
-    mv = moveValidator(False)
-    try:
-        mv.runAllTests()
-    except Exception as e:
-        print(e)
+    mv = moveValidator(True)
+    # try:
+    mv.visualization('testCases/wrongMoveWhite.txt')
+    # except Exception as e:
+    #     print(e)
