@@ -1,5 +1,6 @@
 import copy
 from enum import  Enum
+import os
 
 class state(Enum):
     white = 1
@@ -74,7 +75,7 @@ class moveValidator:
         if self.debug:
             print('Invalid detection')
         else:
-            raise 'Invalid detecion'
+            raise Exception('Invalid detecion.')
 
     def getStartPosition(self, position, colorMove):
         for item in position:
@@ -100,22 +101,34 @@ class moveValidator:
             self.currentState = copy.deepcopy(nextState)
 
     def getDiff(self):
-        toReturn = []
-        wasDiff = False
-        for i in range(0, 8):
-            tmp = []
-            for j in range(0, 8):
-                if self.currentState[i][j] != self.previousState[i][j]:
-                    wasDiff = True
-                    tmp.append(1)
-                else:
-                    tmp.append(0)
-            toReturn.append(tmp)
 
-        if wasDiff:
-            return toReturn
+        try:
+            if self.currentState == [] or self.previousState == []:
+                return None
 
-        return None
+            toReturn = []
+            wasDiff = False
+            for i in range(0, 8):
+                tmp = []
+                for j in range(0, 8):
+                    if self.currentState[i][j] != self.previousState[i][j]:
+                        wasDiff = True
+                        tmp.append(1)
+                    else:
+                        tmp.append(0)
+                toReturn.append(tmp)
+
+            if wasDiff:
+                return toReturn
+
+            return None
+        except:
+            print('dataLen: {}'.format(len(self.data)))
+            for item in self.currentState:
+                print(item)
+            print('prevState')
+            for item in self.previousState:
+                print(item)
 
     def checkClassicMove(self, colorMove, start, stop):
         if self.debug:
@@ -133,17 +146,17 @@ class moveValidator:
                     print('Invalid move black.')
         else:
             if self.previousState[start[0]][start[1]] != self.currentState[stop[0]][stop[1]]:
-                raise 'Invalid pawn color.'
+                raise Exception('Invalid pawn color.')
             if colorMove == state.white:
                 if stop in [[start[0] + 1, start[1] - 1], [start[0] + 1, start[1] + 1]]:
                     return True
                 else:
-                    raise 'Invalid move white.'
+                    raise Exception('Invalid move white.')
             else:
                 if stop in [[start[0] - 1, start[1] - 1], [start[0] - 1, start[1] + 1]]:
                     return True
                 else:
-                    raise 'Invalid move black.'
+                    raise Exception('Invalid move black.')
 
     def checkBeatMove(self, start, beat, stop, colorMove):
         if self.debug:
@@ -194,11 +207,12 @@ class moveValidator:
                 if self.previousState[start[0]][start[1]] == self.currentState[stop[0]][stop[1]]:
                     beatPawnColor = self.toogleColorMove(colorMove)
                     if self.previousState[beat[0]][beat[1]] == beatPawnColor.value:
+                        return True
                         print('Valid beat color.')
                     else:
-                        raise 'Invalid beat color.'
+                        raise Exception('Invalid beat color.')
                 else:
-                    raise 'Invalid start stop colors.'
+                    raise Exception('Invalid start stop colors.')
                 
                 if beat[0] == start[0] + 1 and beat[1] == start[1] + 1:
                     if stop[0] == beat[0] + 1 and stop[1] == beat[1] + 1:
@@ -208,16 +222,17 @@ class moveValidator:
                     if stop[0] == beat[0] + 1 and stop[1] == beat[1] - 1:
                         return True
 
-                raise 'Invalid beat white.'
+                raise Exception('Invalid beat white.')
             if colorMove == state.black:
                 if self.previousState[start[0]][start[1]] == self.currentState[stop[0]][stop[1]]:
                     beatPawnColor = self.toogleColorMove(colorMove)
                     if self.previousState[beat[0]][beat[1]] == beatPawnColor.value:
+                        return True
                         print('Valid beat color.')
                     else:
-                        raise 'Invalid beat color.'
+                        raise Exception('Invalid beat color.')
                 else:
-                    raise 'Invalid start stop colors.'
+                    raise Exception('Invalid start stop colors.')
                 
                 if beat[0] == start[0] - 1 and beat[1] == start[1] + 1:
                     if stop[0] == beat[0] - 1 and stop[1] == beat[1] + 1:
@@ -227,7 +242,7 @@ class moveValidator:
                     if stop[0] == beat[0] - 1 and stop[1] == beat[1] - 1:
                         return True
 
-                raise 'Invalid beat white.'
+                raise Exception('Invalid beat white.')
 
     def getDiffPosition(self, diff):
         position = []
@@ -239,6 +254,22 @@ class moveValidator:
         return position
 
     # For testing
+    def runAllTests(self):
+        files = os.listdir('testCases')
+        for file in files:
+
+            try:
+                self.currentColorMove = state.white
+                self.previousState = None
+                self.currentState = None
+                self.data = []
+                print(file)
+                self.test('./testCases/'+file)
+                
+            except Exception as e:
+                print(e)
+            print()
+
     def test(self, fileName):
         self.readData(fileName)
 
@@ -309,6 +340,9 @@ class moveValidator:
             table.append(lineTMP)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":        
     mv = moveValidator(False)
-    mv.test('allMoveValid.txt')
+    try:
+        mv.runAllTests()
+    except Exception as e:
+        print(e)
