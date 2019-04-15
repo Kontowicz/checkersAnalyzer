@@ -1,14 +1,48 @@
 import copy
 from enum import  Enum
-from board import state
+
+class state(Enum):
+    white = 1
+    black = 2
+    empty = 0
 
 class moveValidator:
-    def __init__(self, debug):
+    def __init__(self, debug, firstFieldColor=state.white):
         self.debug = debug
         self.currentColorMove = state.white
         self.previousState = None
         self.currentState = None
         self.data = []
+        self.firstFieldColor = firstFieldColor
+
+    def allInBlack(self):
+    # 0, 1 field is black
+        if self.firstFieldColor == state.black:
+            for i in range(0, 8):
+                if i % 2 == 1:
+                    for j in range(0, 8, 2):
+                        if self.currentColorMove[i][j] != 0:
+                            return False
+                        #print('I: {} J: {}'.format(i, j))
+                else:
+                    for j in range(1, 8, 2):
+                        if self.currentColorMove[i][j] != 0:
+                            return False                    
+                        #print('I: {} J: {}'.format(i, j))
+        else:
+            # 0, 0 field is black
+            for i in range(0, 8):
+                if i % 2 != 1:
+                    for j in range(0, 8, 2):
+                        if self.currentColorMove[i][j] != 0:
+                            return False                    
+                        #print('I: {} J: {}'.format(i, j))
+                else:
+                    for j in range(1, 8, 2):
+                        if self.currentColorMove[i][j] != 0:
+                            return False                    
+                        #print('I: {} J: {}'.format(i, j))
+        return True
 
     def toogleColorMove(self, color):
         if color == state.black:
@@ -276,5 +310,5 @@ class moveValidator:
 
 
 if __name__ == "__main__":
-    mv = moveValidator(True)
+    mv = moveValidator(False)
     mv.test('allMoveValid.txt')
