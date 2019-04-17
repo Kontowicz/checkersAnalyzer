@@ -3,6 +3,7 @@ from enum import  Enum
 import os
 import time
 import cv2
+from colorama import Fore, Back, Style
 import numpy as np
 
 class state(Enum):
@@ -62,30 +63,43 @@ class moveValidator:
             return True
 
         colorMove = self.currentColorMove
+        isBeatPoss = self.isBeatPossible(colorMove)
+        if self.debug:
+            if isBeatPoss != False:
+                print(Fore.RED + 'isBeatPossible: {}'.format(isBeatPoss))
+                print(Style.RESET_ALL, end = '')        
+                # for i in self.previousState:
+                #     print(i)
+                # print()
+
+                # for i in self.currentState:
+                #     print(i)
+                # print()
+            
         self.currentColorMove = self.toogleColorMove(self.currentColorMove)
         position = self.getDiffPosition(diff) 
 
         start = self.getStartPosition(position, colorMove)
         stop = self.getStopPosition(position)
+
         if start == None or stop == None:
             if self.debug:
                 print('Invalid detection: start {} stop {}.'.format(start, stop))
                 return False
             else:
                 raise Exception('Invalid detection.')
-        if self.debug:
-            print('Start: {} stop: {}'.format(start, stop))
 
         if self.previousState[start[0]][start[1]] == 1 or self.previousState[start[0]][start[1]] == 2:
-            if len(position) == 2:            
+            if len(position) == 2 and isBeatPoss == False:            
                 return self.checkClassicMove(colorMove, start, stop)
-            if len(position) == 3:
+            if len(position) == 3 and isBeatPoss != False:
+                isBeatPoss = False
                 beat = self.getBeatPosition(position, colorMove)
                 return self.checkBeatMove(start, beat, stop, colorMove)
         if self.previousState[start[0]][start[1]] == 3 or self.previousState[start[0]][start[1]] == 4:
-            if len(position) == 2:            
+            if len(position) == 2 and isBeatPoss == False:            
                 return self.checkKingMove(colorMove, start, stop)
-            if len(position) == 3:
+            if len(position) == 3 and isBeatPoss != False:
                 beat = self.getBeatPosition(position, colorMove)
                 return self.checkKingBeat(colorMove, start, beat, stop)
 
@@ -360,7 +374,32 @@ class moveValidator:
                     if self.previousState[beat[0]][beat[1]] == beatColor.value:
                         return True
             raise Exception('Invalid king beat.')
-            
+
+    def isBeatPossible(self, colorMove):
+        toReturn = []
+        for i in range(0, 8):
+            for j in range(0, 8):
+                if colorMove == state.white:
+                    if self.previousState[i][j] == state.white.value:
+                        if i + 2 < 8 and j + 2 < 8:
+                            if self.previousState[i+1][j+1] == state.black.value and self.previousState[i+2][j+2] == state.empty.value:
+                                toReturn.append([i, j])
+
+                        if i + 2 < 8 and j - 2 >= 0:
+                            if self.previousState[i+1][j-1] == state.black.value and self.previousState[i+2][j-2] == state.empty.value:
+                                toReturn.append([i, j])  
+
+                if colorMove == state.black:
+                    if self.previousState[i][j] == state.black.value:
+                        if i - 2 >= 0 and j + 2 < 8:
+                            if self.previousState[i-1][j+1] == state.white.value and self.previousState[i-2][j+2] == state.empty.value:
+                                toReturn.append([i, j])
+                        if i - 2 >= 0 and j - 2 >= 0:
+                            if self.previousState[i-1][j-1] == state.white.value and self.previousState[i-2][j-2] == state.empty.value:
+                                toReturn.append([i, j])           
+        if toReturn != []:
+            return toReturn
+        return False
 
     def countPawns(self):
         white = 0
@@ -514,12 +553,13 @@ class moveValidator:
             self.checkMove()
             img = self.getBoard()
             cv2.imshow(fileName, img)
-            cv2.waitKey(1000)
+            cv2.waitKey(2000)
         
 if __name__ == "__main__":        
     mv = moveValidator(False)
-    mv.test('testCases/validKingBeat.txt')
-    # try:
-    #     mv.runAllTests()
-    # except Exception as e:
-    #     print(e)
+    #mv.visualization('testCases/validKingBeat.txt')
+    #mv.test('testCases/allMoveValid.txt')
+    try:
+        mv.runAllTests()
+    except Exception as e:
+        print(e)
