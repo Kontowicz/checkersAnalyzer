@@ -14,7 +14,7 @@ class state(Enum):
     empty = 0
 
 class moveValidator:
-    def __init__(self, debug, firstFieldColor=state.white):
+    def __init__(self, debug, firstFieldColor=state.black):
         self.debug = debug
         self.currentColorMove = state.white
         self.previousState = None
@@ -68,13 +68,6 @@ class moveValidator:
             if isBeatPoss != False:
                 print(Fore.RED + 'isBeatPossible: {}'.format(isBeatPoss))
                 print(Style.RESET_ALL, end = '')        
-                # for i in self.previousState:
-                #     print(i)
-                # print()
-
-                # for i in self.currentState:
-                #     print(i)
-                # print()
             
         self.currentColorMove = self.toogleColorMove(self.currentColorMove)
         position = self.getDiffPosition(diff) 
@@ -422,7 +415,21 @@ class moveValidator:
 
     # For testing
     def runAllTests(self):
-        files = os.listdir('testCases')
+        files = os.listdir('testCases/firstFieldBlack')
+        for file in files:
+            try:
+                self.currentColorMove = state.black
+                self.previousState = None
+                self.currentState = None
+                self.data = []
+                print(file)
+                self.test('./testCases/firstFieldBlack/'+file)
+                print('All move valid.')
+            except Exception as e:
+                print(e)
+            print()
+
+        files = os.listdir('testCases/firstFieldWhite')
         for file in files:
             try:
                 self.currentColorMove = state.white
@@ -430,11 +437,11 @@ class moveValidator:
                 self.currentState = None
                 self.data = []
                 print(file)
-                self.test('./testCases/'+file)
+                self.test('./testCases/firstFieldWhite/'+file)
                 print('All move valid.')
             except Exception as e:
                 print(e)
-            print()
+            print()            
 
     def test(self, fileName):
         self.readData(fileName)
@@ -507,7 +514,8 @@ class moveValidator:
     def getBoard(self):
         img = np.zeros((544,544, 3), dtype=np.uint8)
         c = np.fromfunction(lambda x, y: ((x // 68) + (y // 68)) % 2, (544, 544))
-        if self.firstFieldColor == state.white:
+        
+        if self.firstFieldColor == state.black:
             img[c == 0] = (0,0,0)
             img[c == 1] = (255,255,255)
         else:
@@ -556,10 +564,10 @@ class moveValidator:
             cv2.waitKey(2000)
         
 if __name__ == "__main__":        
-    mv = moveValidator(False)
-    #mv.visualization('testCases/validKingBeat.txt')
+    mv = moveValidator(True)
+    mv.test('testCases/firstFieldBlack/invalidFirstMoveColorAndBeat.txt')
     #mv.test('testCases/allMoveValid.txt')
-    try:
-        mv.runAllTests()
-    except Exception as e:
-        print(e)
+    # try:
+    #     mv.runAllTests()
+    # except Exception as e:
+    #     print(e)
