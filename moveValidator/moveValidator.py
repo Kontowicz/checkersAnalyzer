@@ -332,12 +332,12 @@ class moveValidator:
 
 
             left = []
-            counter = point[1]
+            counter = start[1]
             for i in range(start[0] + 1, 8):
                 counter -= 1
-                left.append([i, cnt])
+                left.append([i, counter])
 
-            counter = point[1]
+            counter = start[1]
             for i in range(start[0] - 1, -1, -1):
                 counter += 1
                 left.append([i, counter])
@@ -372,12 +372,12 @@ class moveValidator:
 
 
             left = []
-            counter = point[1]
+            counter = start[1]
             for i in range(start[0] + 1, 8):
                 counter -= 1
-                left.append([i, cnt])
+                left.append([i, counter])
 
-            counter = point[1]
+            counter = start[1]
             for i in range(start[0] - 1, -1, -1):
                 counter += 1
                 left.append([i, counter])
@@ -444,7 +444,8 @@ class moveValidator:
         files = os.listdir('testCases/firstFieldBlack')
         for file in files:
             try:
-                self.currentColorMove = state.black
+
+                self.currentColorMove = state.white
                 self.previousState = None
                 self.currentState = None
                 self.data = []
@@ -458,6 +459,7 @@ class moveValidator:
         files = os.listdir('testCases/firstFieldWhite')
         for file in files:
             try:
+                self.firstFieldColor = state.white
                 self.currentColorMove = state.white
                 self.previousState = None
                 self.currentState = None
@@ -590,10 +592,10 @@ class moveValidator:
             cv2.waitKey(2000)
         
 if __name__ == "__main__":        
-    mv = moveValidator(False)
-    mv.test('testCases/firstFieldBlack/validKingBeat.txt')
-    #mv.test('testCases/allMoveValid.txt')
-    # try:
-    #     mv.runAllTests()
-    # except Exception as e:
-    #     print(e)
+    mv = moveValidator(False, state.white)
+#    mv.visualization('testCases/firstFieldWhite/validKingBeat.txt')
+    #mv.test('testCases/firstFieldWhite/allMoveValid.txt')
+    try:
+        mv.runAllTests()
+    except Exception as e:
+        print(e)
