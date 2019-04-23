@@ -320,17 +320,30 @@ class moveValidator:
     def checkKingBeat(self, colorMove, start, beat, stop):
         if self.debug:
             right = []
-            cnt = start[1] + 1
+            cnt = start[1]
             for i in range(start[0] + 1, 8):
-                right.append([i, cnt])
                 cnt += 1
-            left = []
-            cnt = start[1] - 1
-            for i in range(start[0] + 1, 8):
-                left.append([i, cnt])
+                right.append([i, cnt])
+
+            cnt = start[1]
+            for i in range(start[0] - 1, -1, -1):
                 cnt -= 1
-            # print('Start: {} Stop: {}'.format(start, stop))
-            # print('Left: {} Right: {}'.format(left, right))
+                right.append([i, cnt])
+
+
+            left = []
+            counter = point[1]
+            for i in range(start[0] + 1, 8):
+                counter -= 1
+                left.append([i, cnt])
+
+            counter = point[1]
+            for i in range(start[0] - 1, -1, -1):
+                counter += 1
+                left.append([i, counter])
+
+            print('Start: {} Stop: {}'.format(start, stop))
+            print('Left: {} Right: {}'.format(left, right))
             if stop in right:
                 if beat in right:
                     beatColor = self.toogleColorMove(colorMove)
@@ -347,15 +360,28 @@ class moveValidator:
             return False
         else:
             right = []
-            cnt = start[1] + 1
+            cnt = start[1]
             for i in range(start[0] + 1, 8):
-                right.append([i, cnt])
                 cnt += 1
-            left = []
-            cnt = start[1] - 1
-            for i in range(start[0] + 1, 8):
-                left.append([i, cnt])
+                right.append([i, cnt])
+
+            cnt = start[1]
+            for i in range(start[0] - 1, -1, -1):
                 cnt -= 1
+                right.append([i, cnt])
+
+
+            left = []
+            counter = point[1]
+            for i in range(start[0] + 1, 8):
+                counter -= 1
+                left.append([i, cnt])
+
+            counter = point[1]
+            for i in range(start[0] - 1, -1, -1):
+                counter += 1
+                left.append([i, counter])
+
             if stop in right:
                 if beat in right:
                     beatColor = self.toogleColorMove(colorMove)
@@ -564,8 +590,8 @@ class moveValidator:
             cv2.waitKey(2000)
         
 if __name__ == "__main__":        
-    mv = moveValidator(True)
-    mv.test('testCases/firstFieldBlack/invalidFirstMoveColorAndBeat.txt')
+    mv = moveValidator(False)
+    mv.test('testCases/firstFieldBlack/validKingBeat.txt')
     #mv.test('testCases/allMoveValid.txt')
     # try:
     #     mv.runAllTests()
