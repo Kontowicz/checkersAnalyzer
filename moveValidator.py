@@ -14,8 +14,11 @@ class moveValidator:
         self.previousState = None
         self.currentState = None
         self.data = []
+        self.colorMoveTEST = None
+        self.stopTEST = [0,0]
         self.isBeatPossBool = False
         self.firstFieldColor = firstFieldColor
+        self.counter = 0
 
     def allInBlack(self):
         if self.firstFieldColor == state.black:
@@ -56,20 +59,16 @@ class moveValidator:
 
         if diff == None:
             return True
-
         colorMove = self.currentColorMove
         isBeatPoss = self.isBeatPossible(colorMove)
-        if self.debug:
-            if isBeatPoss != False:
-                print(Fore.RED + 'isBeatPossible: {}'.format(isBeatPoss))
-                print(Style.RESET_ALL, end = '')        
-            
-        self.currentColorMove = self.toogleColorMove(self.currentColorMove)
+        if self.isBeatPossBool == False:
+            self.currentColorMove = self.toogleColorMove(self.currentColorMove)
         position = self.getDiffPosition(diff) 
 
         start = self.getStartPosition(position, colorMove)
         stop = self.getStopPosition(position)
-
+        self.stopTEST = stop
+        self.colorMoveTEST = colorMove
         if start == None or stop == None:
             if self.debug:
                 print('Invalid detection: start {} stop {}.'.format(start, stop))
@@ -83,6 +82,7 @@ class moveValidator:
             if len(position) == 3 and isBeatPoss != False:
                 self.isBeatPossBool = False
                 beat = self.getBeatPosition(position, colorMove)
+                #self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                 return self.checkBeatMove(start, beat, stop, colorMove)
         if self.previousState[start[0]][start[1]] == 3 or self.previousState[start[0]][start[1]] == 4:
             if len(position) == 2 and isBeatPoss == False:            
@@ -91,13 +91,6 @@ class moveValidator:
                 self.isBeatPossBool = False
                 beat = self.getBeatPosition(position, colorMove)
                 return self.checkKingBeat(colorMove, start, beat, stop)
-        
-        if self.isBeatPossible(colorMove) != False:
-            self.isBeatPossBool = True
-            self.currentColorMove = self.toogleColorMove(self.currentColorMove)
-        else:
-            raise Exception('Unimplemented multiple beat.')
-            
         if self.debug:
             print('Invalid detection: {}'.format(position))
         else:
@@ -112,7 +105,7 @@ class moveValidator:
         king = self.getCurrentColorMoveKing(colorMove)
 
         for item in position:
-            if self.previousState[item[0]][item[1]] == colorMove.value or self.previousState[item[0]][item[1]] == king.value:
+            if self.previousState[item[0]][item[1]] == colorMove.value or self.previousState[item[0]][item[1]] == colorMove.value + 2:
                 return item
 
     def getStopPosition(self, position):
@@ -201,16 +194,18 @@ class moveValidator:
                     else:
                         print('Invalid beat color.')
                 else:
-                    print('Invalid start stop colors.')
+                    print('Invalid start {} stop {} colors.'.format(start, stop))#self.previousState[start[0]][start[1]], self.currentState[stop[0]][stop[1]]))
                 
                 if beat[0] == start[0] + 1 and beat[1] == start[1] + 1:
                     if stop[0] == beat[0] + 1 and stop[1] == beat[1] + 1:
                         print('Valid beat white.')
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
 
                 if beat[0] == start[0] + 1 and beat[1] == start[1] - 1:
                     if stop[0] == beat[0] + 1 and stop[1] == beat[1] - 1:
                         print('Valid beat white.')
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
                 print('Invalid beat white.')
                 return False
@@ -228,11 +223,13 @@ class moveValidator:
                 if beat[0] == start[0] - 1 and beat[1] == start[1] + 1:
                     if stop[0] == beat[0] - 1 and stop[1] == beat[1] + 1:
                         print('Valid beat white.')
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
 
                 if beat[0] == start[0] - 1 and beat[1] == start[1] - 1:
                     if stop[0] == beat[0] - 1 and stop[1] == beat[1] - 1:
                         print('Valid beat white.')
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
                 print('Invalid beat white.')
                 return False
@@ -241,8 +238,9 @@ class moveValidator:
                 if self.previousState[start[0]][start[1]] == self.currentState[stop[0]][stop[1]] or self.previousState[start[0]][start[1]] + 2 == self.currentState[stop[0]][stop[1]]:
                     beatPawnColor = self.toogleColorMove(colorMove)
                     if self.previousState[beat[0]][beat[1]] == beatPawnColor.value:
-                        return True
-                        print('Valid beat color.')
+                        i = 1
+                        #self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
+                        #print('Valid beat color.')
                     else:
                         raise Exception('Invalid beat color.')
                 else:
@@ -250,10 +248,12 @@ class moveValidator:
                 
                 if beat[0] == start[0] + 1 and beat[1] == start[1] + 1:
                     if stop[0] == beat[0] + 1 and stop[1] == beat[1] + 1:
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
 
                 if beat[0] == start[0] + 1 and beat[1] == start[1] - 1:
                     if stop[0] == beat[0] + 1 and stop[1] == beat[1] - 1:
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
 
                 raise Exception('Invalid beat white.')
@@ -261,8 +261,8 @@ class moveValidator:
                 if self.previousState[start[0]][start[1]] == self.currentState[stop[0]][stop[1]] or self.previousState[start[0]][start[1]] + 2 == self.currentState[stop[0]][stop[1]]:
                     beatPawnColor = self.toogleColorMove(colorMove)
                     if self.previousState[beat[0]][beat[1]] == beatPawnColor.value:
-                        return True
-                        print('Valid beat color.')
+                        i = 1
+                        #print('Valid beat color.')
                     else:
                         raise Exception('Invalid beat color.')
                 else:
@@ -270,10 +270,12 @@ class moveValidator:
                 
                 if beat[0] == start[0] - 1 and beat[1] == start[1] + 1:
                     if stop[0] == beat[0] - 1 and stop[1] == beat[1] + 1:
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
 
                 if beat[0] == start[0] - 1 and beat[1] == start[1] - 1:
                     if stop[0] == beat[0] - 1 and stop[1] == beat[1] - 1:
+                        self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
                         return True
 
                 raise Exception('Invalid beat white.')
@@ -417,10 +419,38 @@ class moveValidator:
                                 toReturn.append([i, j])
                         if i - 2 >= 0 and j - 2 >= 0:
                             if self.previousState[i-1][j-1] == state.white.value and self.previousState[i-2][j-2] == state.empty.value:
-                                toReturn.append([i, j])           
+                                toReturn.append([i, j]) 
         if toReturn != []:
             return toReturn
         return False
+
+    def isMultipleBeatPossible(self, stop, colorMove):
+        toReturn = []
+        i = stop[0]
+        j = stop[1]
+
+        if colorMove == state.white:
+            if self.currentState[i][j] == state.white.value:
+                if i + 2 < 8 and j + 2 < 8:
+                    if self.currentState[i+1][j+1] == state.black.value and self.currentState[i+2][j+2] == state.empty.value:
+                        toReturn.append([i, j])
+
+                if i + 2 < 8 and j - 2 >= 0:
+                    if self.currentState[i+1][j-1] == state.black.value and self.currentState[i+2][j-2] == state.empty.value:
+                        toReturn.append([i, j])  
+
+        if colorMove == state.black:
+            if self.currentState[i][j] == state.black.value:
+                if i - 2 >= 0 and j + 2 < 8:
+                    if self.currentState[i-1][j+1] == state.white.value and self.currentState[i-2][j+2] == state.empty.value:
+                        toReturn.append([i, j])
+                if i - 2 >= 0 and j - 2 >= 0:
+                    if self.currentState[i-1][j-1] == state.white.value and self.currentState[i-2][j-2] == state.empty.value:
+                        toReturn.append([i, j])           
+        if toReturn != []:
+            return toReturn
+        return False
+
 
     def countPawns(self):
         white = 0
@@ -447,7 +477,7 @@ class moveValidator:
         testCasesResult = { 'allMoveValid.txt' : True, 'invalidBeatBack.txt' : False, 'invalidBeat.txt' : False, 'invalidFirstMoveColorAndBeat.txt' : False,\
                             'invalidPawnAmmount.txt' : False, 'moveBlackToWhite.txt' : False, 'moveWhiteToWhite.txt' : False, \
                             'twoPawnInOneField.txt' : False, 'unimplementedBeat.txt' : False, 'validKingBeat.txt' : True, \
-                            'wrongBeatWhite.txt' : False, 'wrongMoveBlack.txt' : False, 'wrongMoveWhite.txt' : False }
+                            'wrongBeatWhite.txt' : False, 'wrongMoveBlack.txt' : False, 'wrongMoveWhite.txt' : False, 'multipleBeat.txt' : True}
         for file in files:
             try:
                 self.currentColorMove = state.white
@@ -504,6 +534,8 @@ class moveValidator:
         for i in range(0, len(self.data)):
             self.readNext(self.data[i])
             self.checkMove()
+            if self.isBeatPossBool != False:
+                self.currentColorMove = self.toogleColorMove(self.currentColorMove)
 
     def dumpToFile(self, diff):
         file = open('dump.txt', 'a')
@@ -615,12 +647,18 @@ class moveValidator:
         for i in range(0, len(self.data)):
             self.readNext(self.data[i])
             self.checkMove()
+
+                #self.isBeatPossBool = self.isMultipleBeatPossible(self.stopTEST, self.colorMoveTEST)
+            if self.isBeatPossBool != False:
+                self.currentColorMove = self.toogleColorMove(self.currentColorMove)
+            
             img = self.getBoard()
             cv2.imshow(fileName, img)
-            cv2.waitKey(2000)
+            cv2.waitKey(100)
         
 if __name__ == "__main__":        
-    mv = moveValidator(False, state.white)
+    mv = moveValidator(False, state.black)
+#    mv.visualization('testCases/firstFieldBlack/allMoveValid.txt')
     try:
         mv.runAllTests()
     except Exception as e:
