@@ -86,11 +86,10 @@ class checkersAnalyzer(object):
 
     # Pass arguments for display image, join displayed image with board.
     def drawBoard(self):
-        new_board = np.concatenate((self.board,self.drawTextInImageText()),axis=0)
-        return self.image_circle, self.image, new_board
-        cv2.imshow('Zaznaczone pionki', self.image_circle)
-        cv2.imshow('Plansza', self.image)
-        cv2.imshow('Wizualizacja', new_board)
+        return self.image_circle, self.image, self.board
+        #cv2.imshow('Zaznaczone pionki', self.image_circle)
+        #cv2.imshow('Plansza', self.image)
+        #cv2.imshow('Wizualizacja', new_board)
 
     # Detect fields distribution.
     def detectAreaBoardDistribution(self):

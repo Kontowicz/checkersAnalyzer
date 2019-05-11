@@ -1,2 +1,0 @@
-python setup build - tworzy plik exec na podstawie main.py, chackersAnalyzer.py dolaczany jako biblioteka
-		     w main podac sciezke z ktorej ma byc pobierany film
