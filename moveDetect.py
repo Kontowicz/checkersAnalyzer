@@ -21,7 +21,9 @@ class moveDetect():
         morphology = cv2.rectangle(morphology,(10,10),(440,440),(0,0,0),-1)
         _, contours, _ = cv2.findContours(morphology,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-        if len(contours)==34:
+        print("MOVE: ",len(contours))
+
+        if len(contours)==4:
             return True
         else:
             return False

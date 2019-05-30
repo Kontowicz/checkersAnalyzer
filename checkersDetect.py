@@ -18,6 +18,8 @@ class checkersDetect():
         _, contours, _ = cv2.findContours(morphology,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         tab = []
 
+        print("DETECT: ",len(contours))
+
         if len(contours)==4:
             for x in range(0,4):
                 cnt = contours[x]
@@ -31,7 +33,6 @@ class checkersDetect():
             pts1 = np.float32([[tab[6],tab[7]],[tab[4],tab[5]],[tab[2],tab[3]],[tab[0],tab[1]]])
             M = cv2.getPerspectiveTransform(pts1, pts2)
             result = cv2.warpPerspective(self.image, M, (450, 450))
-
             return True, result
         else:
             return False, None

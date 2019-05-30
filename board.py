@@ -3,7 +3,10 @@ from enum import  Enum
 class state(Enum):
     white = 1
     black = 2
+    whiteKing = 3
+    blackKing = 4
     empty = 0
+
 
 class board():
     def __init__(self, firstColor, sq):
