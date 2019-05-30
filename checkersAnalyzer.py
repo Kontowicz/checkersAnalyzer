@@ -22,6 +22,10 @@ class checkersAnalyzer(object):
         self.checkers_size = 544 # Board size for visualisation
         self.board = None # Board visualisation
         self.first_sq = None
+        self.param1 = 100
+        self.param2 = 30
+        self.max_rad= 27
+        self.min_rad = 24
         self.detectAreaBoardDistribution()
         self.currentStateBoard = board.board(self.first_sq, self.sq)
         self.previousStateBoard = board.board(self.first_sq, self.sq)
@@ -86,7 +90,7 @@ class checkersAnalyzer(object):
 
     # Pass arguments for display image, join displayed image with board.
     def drawBoard(self):
-        return self.image_circle, self.image, self.board
+        return cv2.resize(self.image_circle,(714,714)), self.image, self.board
         #cv2.imshow('Zaznaczone pionki', self.image_circle)
         #cv2.imshow('Plansza', self.image)
         #cv2.imshow('Wizualizacja', new_board)
@@ -115,13 +119,13 @@ class checkersAnalyzer(object):
         height_sq =  img.shape[1] / 8
 
         # Detect circles in image.
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=100, param2=30, minRadius=24, maxRadius=27)
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=self.param1, param2=self.param2, minRadius=self.min_rad, maxRadius=self.max_rad)
         circles = np.uint16(np.around(circles))
 
         # Select detected circle center and it's  contours
         for i in circles[0, :]:
-            cv2.circle(self.image_circle, (i[0], i[1]), i[2], (0, 255, 0), 1);
-            cv2.circle(self.image_circle, (i[0], i[1]), 2, (0, 0, 255), 3);
+            cv2.circle(self.image_circle, (i[0], i[1]), i[2], (255, 0, 0), 1);
+            cv2.circle(self.image_circle, (i[0], i[1]), 2, (0, 255,0 ), 3);
 
         matrix2 = []  # Table for storage pawns positions.
         center_circle = [] # Table for storage image slices with circle center.
@@ -204,7 +208,7 @@ class checkersAnalyzer(object):
             if self.debug:
                 print('Invalid detection: {}'.format(len(tmp)))
             else:
-                raise 'Invalid detection'
+                raise Exception('Invalid detection')
         
         if len(tmp) == 2:
             if self.debug:
@@ -212,7 +216,7 @@ class checkersAnalyzer(object):
                     if self.debug:
                         print('Invalid detection: {}'.format(tmp))
                     else:
-                        raise 'Invalid detection'
+                        raise Exception('Invalid detection')
 
                 if self.currentColorMove == color.white:
                     if stopPos in [[startPos[0] + 1, startPos[1] - 1], [startPos[0] + 1, startPos[1] + 1]]:
@@ -221,7 +225,7 @@ class checkersAnalyzer(object):
                     if stopPos in [[startPos[0] - 1, startPos[1] - 1], [startPos[0] - 1, startPos[1] + 1]]:
                         print('Valid move black')
             else:
-                raise 'Invalid move'
+                raise Exception('Invalid move')
         if len(tmp) == 3:
             if self.debug:
                 # Find start position
@@ -232,12 +236,12 @@ class checkersAnalyzer(object):
                         beatPawnPos = item
                 print('Beat pos: {} Przewidywany kolor: {} Znaleziony kolor: {}'.format(beatPawnPos, secondColor, self.previousStateBoard.getPawnColor(beatPawnPos[0],beatPawnPos[1])))
             else:
-                raise 'Invalid move'
+                raise Exception('Invalid move')
         if len(tmp) > 3:
             if self.debug:
                 print('Invalid detection: {}'.format(len(tmp)))
             else:
-                raise 'Invalid detection'
+                raise Exception('Invalid detection')
 
         self.currentColorMove = color.black if self.currentColorMove == color.white else color.white # Toggle collors
 
@@ -248,7 +252,7 @@ class checkersAnalyzer(object):
         for item in self.currentStateBoard.board:
             for element in item:
                 if element[0] is not color.empty and element[1] is color.white:
-                    raise 'Invalid position'
+                    raise Exception('Invalid position')
 
     def getDiff(self):
         toReturn = []

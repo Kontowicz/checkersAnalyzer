@@ -4,23 +4,45 @@ import sys
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(573, 780)
+        Form.resize(1333, 780)
         self.widget = QtWidgets.QWidget(Form)
         self.widget.setGeometry(QtCore.QRect(13, 13, 544, 544))
         self.widget.setObjectName("widget")
+
+        self.widget_image = QtWidgets.QWidget(Form)
+        self.widget_image.setGeometry(QtCore.QRect(570, 13, 753, 753))
+        self.widget_image.setObjectName("widget_image")
+
         self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
+
+        self.verticalLayout2 = QtWidgets.QVBoxLayout(self.widget_image)
+        self.verticalLayout2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout2.setObjectName("verticalLayout2")
+
         self.image_label = QtWidgets.QLabel(self.widget)
         self.image_label.setEnabled(True)
         self.image_label.setFrameShape(QtWidgets.QFrame.Box)
         self.image_label.setText("")
         self.image_label.setObjectName("image_label")
 
+        self.image_set = QtWidgets.QLabel(self.widget_image)
+        self.image_set.setEnabled(True)
+        self.image_set.setFrameShape(QtWidgets.QFrame.Box)
+        self.image_set.setText("")
+        self.image_set.setObjectName("image_set")
+
+        self.verticalLayout2.addWidget(self.image_set)
+
         self.verticalLayout.addWidget(self.image_label)
         self.control_bt = QtWidgets.QPushButton(self.widget)
         self.control_bt.setObjectName("control_bt")
         self.verticalLayout.addWidget(self.control_bt)
+
+        self.camera_control = QtWidgets.QPushButton(self.widget)
+        self.camera_control.setObjectName("camera_control")
+        self.verticalLayout.addWidget(self.camera_control)
 
         self.horizontalSlider = QtWidgets.QSlider(Form)
         self.horizontalSlider.setGeometry(QtCore.QRect(130, 585, 160, 22))
@@ -105,19 +127,20 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Cam view"))
-        self.control_bt.setText(_translate("Form", "Start"))
+        self.control_bt.setText(_translate("Form", "Start analysis"))
+        self.camera_control.setText(_translate("Form", "Start camera"))
         self.Parametr1.setText(_translate("Form", "Canny threshold:"))
-        self.Parametr11.setText(_translate("Form", "30"))
-        self.Parametr22.setText(_translate("Form", "100"))
+        self.Parametr11.setText(_translate("Form", "40"))
+        self.Parametr22.setText(_translate("Form", "40"))
         self.Parametr2.setText(_translate("Form", "Center threshold:"))
-        self.max_radius1.setText(_translate("Form", "50"))
+        self.max_radius1.setText(_translate("Form", "24"))
         self.max_radius.setText(_translate("Form", "Maximum radius:"))
-        self.min_radius1.setText(_translate("Form", "24"))
+        self.min_radius1.setText(_translate("Form", "20"))
         self.min_radius.setText(_translate("Form", "Minimum radius:"))
-        self.horizontalSlider.setValue(30)
-        self.horizontalSlider_2.setValue(100)
-        self.horizontalSlider_3.setValue(50)
-        self.horizontalSlider_4.setValue(24)
+        self.horizontalSlider.setValue(40)
+        self.horizontalSlider_2.setValue(40)
+        self.horizontalSlider_3.setValue(24)
+        self.horizontalSlider_4.setValue(20)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
