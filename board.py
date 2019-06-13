@@ -75,7 +75,11 @@ class board():
             for j in range(0, 8):
                 if self.board[i][j][0] == state.white:
                     counterWhite += 1
+                if self.board[i][j][0] == state.whiteKing:
+                    counterWhite += 1
                 if self.board[i][j][0] == state.black:
+                    counterBlack += 1
+                if self.board[i][j][0] == state.blackKing:
                     counterBlack += 1
         return counterWhite, counterBlack
 

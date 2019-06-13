@@ -18,7 +18,7 @@ class checkersAnalyzer(object):
         self.currentColorMove = color.white # TODO: change color in when captured game start with white pawn move
         self.image = img # Image captured from camera
         self.points = [] # Points for transposition
-        self.wh_size= 450 # Widht, heigt image for work
+        self.wh_size= 544 # Widht, heigt image for work
         self.sq = 68 # Field size
         self.checkers_size = 544 # Board size for visualisation
         self.board = None # Board visualisation
@@ -26,6 +26,10 @@ class checkersAnalyzer(object):
         self.detectAreaBoardDistribution()
         self.currentStateBoard = board.board(self.first_sq, self.sq)
         self.previousStateBoard = board.board(self.first_sq, self.sq)
+        self.param1 = 40
+        self.param2 = 99
+        self.min = 20
+        self.max = 40
 
     # Set frame as image.
     def readVideo(self,img):
@@ -81,15 +85,18 @@ class checkersAnalyzer(object):
 
     # Pass arguments for display image, join displayed image with board.
     def drawBoard(self):
-        new_board = np.concatenate((self.board,self.drawTextInImageText()),axis=0)
-        return self.image_circle, self.image, new_board
+        # new_board = np.concatenate((self.board,self.drawTextInImageText()),axis=0)
+        return self.image_circle, self.image, self.board
 
     # Detect fields distribution.
     def detectAreaBoardDistribution(self):
+        if self.image is None:
+            return
         img = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        #print ( img.shape[0:2])
         width, height = [x // 8 for x in img.shape[0:2]]
 
-        cut_area = img[width*3:width*4,height:width*2]
+        cut_area = img[width*3:width*4, height:width*2]
 
         thresh = cv2.threshold(cut_area, 175, 255, cv2.THRESH_BINARY)[1]
 
@@ -99,16 +106,57 @@ class checkersAnalyzer(object):
             self.first_sq = color.white
 
     # Detect pawns.
-    def detectCircle(self):
+    def detectCircle(self, nextto):
+
+        def detectKing(image, white, width_sq, height_sq):
+            centerking = []
+            if white:
+                kernel = np.ones((5, 5), np.uint8)
+                lower = np.array([20, 100, 100])
+                uper = np.array([50, 255, 255])
+                img_hsv2 = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                mask_one = cv2.inRange(img_hsv2, lower, uper)
+                morphology = cv2.morphologyEx(mask_one, cv2.MORPH_OPEN, kernel)
+                morphology = cv2.morphologyEx(morphology, cv2.MORPH_DILATE, kernel)
+                _, contours, _ = cv2.findContours(morphology, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                if contours is not None:
+                    for x in contours:
+                        M = cv2.moments(x)
+                        cx = int(M['m10'] / M['m00'])
+                        cy = int(M['m01'] / M['m00'])
+                        cx = int(cx // width_sq)
+                        cy = int(cy // height_sq)
+                        centerking.append([cx, cy])
+            else:
+                kernel = np.ones((5, 5), np.uint8)
+                lower = np.array([160, 100, 100])
+                uper = np.array([179, 255, 255])
+                img_hsv2 = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                mask_one = cv2.inRange(img_hsv2, lower, uper)
+                morphology = cv2.morphologyEx(mask_one, cv2.MORPH_OPEN, kernel)
+                morphology = cv2.morphologyEx(morphology, cv2.MORPH_DILATE, kernel)
+                _, contours, _ = cv2.findContours(morphology, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                if contours is not None:
+                    for x in contours:
+                        M = cv2.moments(x)
+                        cx = int(M['m10'] / M['m00'])
+                        cy = int(M['m01'] / M['m00'])
+                        cx = int(cx // width_sq)
+                        cy = int(cy // height_sq)
+                        centerking.append([cx, cy])
+            return centerking
+
         img = cv2.cvtColor(self.image,cv2.COLOR_BGR2GRAY)
         self.image_circle = self.image.copy()
-
         # Calculate field width based on current image.
         width_sq = img.shape[0] / 8
         height_sq =  img.shape[1] / 8
 
         # Detect circles in image.
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 40, param1=100, param2=30, minRadius=24, maxRadius=27)
+        # print ([width_sq,height_sq])
+        # print ([self.param1, self.param2, self.min, self.max])
+        # for ( i in range ( 0, width_sq,width_sq))
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 2, 80, param1=self.param1, param2=self.param2, minRadius=self.min, maxRadius=self.max)
         circles = np.uint16(np.around(circles))
 
         # Select detected circle center and it's  contours
@@ -143,11 +191,29 @@ class checkersAnalyzer(object):
                 i, j = self.currentStateBoard.getFieldCord(x[1], x[0])
                 cv2.circle(self.board, (j - 34, i - 34), 20, (217,217,217), -1)
 
+        white = detectKing(self.image,True,width_sq,height_sq)
+        black = detectKing(self.image, False, width_sq, height_sq)
+
+        for KingWhite in white:
+            self.currentStateBoard.setPawnColor(KingWhite[1], KingWhite[0], color.whiteKing)
+            i, j = self.currentStateBoard.getFieldCord(KingWhite[1], KingWhite[0])
+            cv2.circle(self.board, (j - 34, i - 34), 20, (217, 217, 217), -1)
+            cv2.circle(self.board, (j - 34, i - 34), 10, (201, 232, 0), -1)
+
+        for KingBlack in black:
+            self.currentStateBoard.setPawnColor(KingBlack[1], KingBlack[0], color.blackKing)
+            i, j = self.currentStateBoard.getFieldCord(KingBlack[1], KingBlack[0])
+            cv2.circle(self.board, (j - 34, i - 34), 20, (64, 64, 64), -1)
+            cv2.circle(self.board, (j - 34, i - 34), 10, (201, 232, 0), -1)
+
         if self.counter == 0:
             self.previousStateBoard.board = copy.deepcopy(self.currentStateBoard.board)
             self.counter = 1
         b = self.getBoard()
-        self.moveValid.readNext(b)
+        if nextto == True:
+            self.moveValid.readNext(b)
+
+    def checkMove(self):
         self.moveValid.checkMove()
 
     def getBoard(self):
